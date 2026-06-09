@@ -110,5 +110,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Joke API Configuration
-JOKE_API_URL = 'https://official-joke-api.appspot.com/random_joke'
+# Joke API Configuration - Using JokeAPI (v2.jokeapi.dev)
+JOKE_API_BASE_URL = 'https://v2.jokeapi.dev/joke'
