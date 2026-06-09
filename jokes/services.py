@@ -1,5 +1,5 @@
 """
-Service module to interact with the Official Joke API
+Service module to interact with JokeAPI
 """
 import requests
 from django.conf import settings
@@ -9,13 +9,33 @@ from .models import Joke
 
 def fetch_random_joke():
     """
-    Fetch a random joke from the Official Joke API
+    Fetch a random joke from JokeAPI
     Returns: dict with joke data or None if request fails
     """
     try:
-        response = requests.get(settings.JOKE_API_URL, timeout=5)
+        url = f"{settings.JOKE_API_BASE_URL}/Any?type=single"
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        
+        # JokeAPI returns error flag
+        if data.get('error'):
+            print("JokeAPI returned an error")
+            return None
+        
+        # JokeAPI returns different format, convert to our format
+        if data.get('type') == 'single':
+            return {
+                'setup': data.get('joke', ''),
+                'punchline': '',
+                'type': data.get('category', 'general').lower()
+            }
+        else:
+            return {
+                'setup': data.get('setup', ''),
+                'punchline': data.get('delivery', ''),
+                'type': data.get('category', 'general').lower()
+            }
     except requests.exceptions.RequestException as e:
         print(f"Error fetching joke: {e}")
         return None
@@ -42,28 +62,53 @@ def get_random_joke():
 
 def get_random_joke_by_type(joke_type):
     """
-    Fetch a random joke by type from the Official Joke API
+    Fetch a random joke by type from JokeAPI
     Supports types: 'general', 'knock-knock', 'programming'
     Returns: dict with joke data or None if request fails
     """
     try:
-        url = f"https://official-joke-api.appspot.com/jokes/{joke_type}/random"
-        response = requests.get(url, timeout=5)
+        # Map our joke types to JokeAPI categories
+        category_map = {
+            'general': 'General',
+            'knock-knock': 'Knock-Knock',
+            'programming': 'Programming'
+        }
+        
+        category = category_map.get(joke_type, 'General')
+        url = f"{settings.JOKE_API_BASE_URL}/{category}?type=single"
+        
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
         
-        # API returns a list for some endpoints
         data = response.json()
-        if isinstance(data, list):
-            data = data[0]
+        
+        # JokeAPI returns error flag
+        if data.get('error'):
+            print(f"JokeAPI returned an error for category {category}")
+            return None
+        
+        # JokeAPI returns different format, convert to our format
+        if data.get('type') == 'single':
+            joke_data = {
+                'setup': data.get('joke', ''),
+                'punchline': '',
+                'type': joke_type
+            }
+        else:
+            joke_data = {
+                'setup': data.get('setup', ''),
+                'punchline': data.get('delivery', ''),
+                'type': joke_type
+            }
         
         # Save to database for history
         Joke.objects.create(
-            setup=data.get('setup', ''),
-            punchline=data.get('punchline', ''),
-            joke_type=data.get('type', joke_type)
+            setup=joke_data.get('setup', ''),
+            punchline=joke_data.get('punchline', ''),
+            joke_type=joke_data.get('type', joke_type)
         )
         
-        return data
+        return joke_data
     except requests.exceptions.RequestException as e:
         print(f"Error fetching joke by type: {e}")
         return None
