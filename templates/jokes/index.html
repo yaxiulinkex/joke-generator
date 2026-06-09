@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Random Joke Generator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title text-center mb-4">Get a Random Joke</h2>
+
+        {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+        {% if joke %}
+            <div class="joke-content">
+                <div class="setup">{{ joke.setup }}</div>
+                <div class="punchline">{{ joke.punchline }}</div>
+                <div class="text-muted small mt-3">Type: <span class="badge bg-info">{{ joke.type|default:"general" }}</span></div>
+            </div>
+        {% else %}
+            <div class="text-center text-muted mb-4">
+                <p>Click the button below to get a hilarious joke!</p>
+            </div>
+        {% endif %}
+
+        <form method="post" class="text-center">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-custom me-2">
+                Get Random Joke 😂
+            </button>
+        </form>
+
+        <div class="mt-4 pt-3 border-top">
+            <h5 class="text-center mb-3">Get Jokes by Type</h5>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                <a href="{% url 'jokes:by_type' 'general' %}" class="btn btn-outline-secondary btn-sm">
+                    General
+                </a>
+                <a href="{% url 'jokes:by_type' 'programming' %}" class="btn btn-outline-secondary btn-sm">
+                    Programming
+                </a>
+                <a href="{% url 'jokes:by_type' 'knock-knock' %}" class="btn btn-outline-secondary btn-sm">
+                    Knock-Knock
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title">API Endpoint</h5>
+        <p class="text-muted small">Need JSON format? Use our API endpoint:</p>
+        <code>GET /api/random/</code>
+        <p class="text-muted small mt-2">Returns a random joke in JSON format.</p>
+    </div>
+</div>
+{% endblock %}

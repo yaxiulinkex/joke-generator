@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Joke History{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title text-center mb-4">Joke History</h2>
+
+        {% if jokes %}
+            <div class="accordion" id="jokeAccordion">
+                {% for joke in jokes %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ joke.id }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ joke.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ joke.id }}">
+                                <strong>Joke #{{ forloop.counter }}</strong>
+                                <span class="badge bg-info ms-2">{{ joke.joke_type }}</span>
+                                <small class="text-muted ms-auto">{{ joke.created_at|date:"M d, Y H:i" }}</small>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ joke.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ joke.id }}" data-bs-parent="#jokeAccordion">
+                            <div class="accordion-body">
+                                <div class="setup mb-3">
+                                    <strong>Setup:</strong> {{ joke.setup }}
+                                </div>
+                                <div class="punchline">
+                                    <strong>Punchline:</strong> {{ joke.punchline }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center" role="alert">
+                <p class="mb-0">No jokes in history yet!</p>
+                <p class="small text-muted mb-0">Visit the <a href="{% url 'jokes:index' %}">home page</a> to generate some jokes.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
